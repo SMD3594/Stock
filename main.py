@@ -17,37 +17,47 @@ class Variables:
     high = {}
     low = {}
     date_time = {}
-    avg = {}
-    fig = Figure(figsize=(15, 7), dpi=150)
 
 
 def plot():
-    for i in range(10):
-        Variables.avg[i] = (float(Variables.open[i]) + float(Variables.close[i]) +
-                            float(Variables.high[i]) + float(Variables.low[i])) / 4
+    for k, v in Variables.close.items():
+        Variables.close[k] = float(v)
 
-    lists_date_time = Variables.date_time.values()
-    lists_close = Variables.close.values()
-    lists_open = Variables.open.values()
-    lists_high = Variables.high.values()
-    lists_low = Variables.low.values()
-    lists_avg = Variables.avg.values()
+    for k, v in Variables.open.items():
+        Variables.open[k] = float(v)
+
+    for k, v in Variables.high.items():
+        Variables.high[k] = float(v)
+
+    for k, v in Variables.low.items():
+        Variables.low[k] = float(v)
+
+    lists_date_time_reversed = dict(reversed(list(Variables.date_time.items())))
+    lists_date_time = lists_date_time_reversed.values()
+    lists_close_reverse = dict(reversed(list(Variables.close.items())))
+    lists_close = lists_close_reverse.values()
+    lists_open_reverse = dict(reversed(list(Variables.open.items())))
+    lists_open = lists_open_reverse.values()
+    lists_high_reverse = dict(reversed(list(Variables.high.items())))
+    lists_high = lists_high_reverse.values()
+    lists_low_reverse = dict(reversed(list(Variables.low.items())))
+    lists_low = lists_low_reverse.values()
 
     # the figure that will contain the plot
-
+    fig = Figure(figsize=(10, 6), dpi=150)
     # adding the subplot
-    plot1 = Variables.fig.add_subplot()
-    Variables.fig.autofmt_xdate(rotation=45)
-
+    plot1 = fig.add_subplot()
+    fig.autofmt_xdate(rotation=45)
     # plotting the graph
-    plot1.plot(lists_date_time, lists_close, color='red')
+    plot1.plot(lists_date_time, lists_close, color='black')
+
     # creating the Tkinter canvas containing the Matplotlib figure
-    canvas = FigureCanvasTkAgg(Variables.fig, master=mainframe)
+    canvas = FigureCanvasTkAgg(fig, master=mainframe)
+
     canvas.draw()
 
     # placing the canvas on the Tkinter window
     canvas.get_tk_widget().pack(side=ttk.BOTTOM)
-
     # creating the Matplotlib toolbar
     toolbar = NavigationToolbar2Tk(canvas, mainframe)
     toolbar.update()
@@ -57,7 +67,7 @@ def plot():
     canvas.get_tk_widget().pack(side=ttk.BOTTOM)
 
 
-def calculate():
+def calculate(event):
     try:
         response = requests.get(
             Variables.api + Variables.ticker + t.get() + Variables.interval +
@@ -96,7 +106,7 @@ def calculate():
         print("LOW: ", Variables.low)
         print("CLOSE: ", Variables.close)
         print("Datetime: ", Variables.date_time)
-        Variables.fig.clear()
+        plot()
 
     except ValueError:
         pass
@@ -110,6 +120,7 @@ mainframe.pack(fill=ttk.BOTH, expand=ttk.TRUE)
 
 ticker_label = ttk.Label(mainframe, text="Ticker:", font=('Gothic', 14))
 ticker_label.pack(side=ttk.TOP)
+
 
 t = ttk.StringVar()
 t_entry = ttk.Entry(mainframe, width=7, textvariable=t, font=('Gothic', 14))
@@ -162,11 +173,11 @@ output = ttk.StringVar()
 output_label = ttk.Label(mainframe, textvariable=output, font=('Gothic', 14, 'bold'))
 output_label.pack(side=ttk.TOP)
 
-fetch_button = ttk.Button(master=mainframe, height=2, width=10, text="Fetch", command=calculate)
+fetch_button = ttk.Button(master=mainframe, height=2, width=10, text="Fetch")
+fetch_button.bind('<Button-1>', calculate)
 fetch_button.pack(side=ttk.TOP)
 
-plot_button = ttk.Button(master=mainframe, command=plot, height=2, width=10, text="Plot")
-plot_button.pack(side=ttk.TOP)
+root.bind('<Return>', calculate)
 
 t_entry.focus()
 
